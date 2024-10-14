@@ -44,7 +44,7 @@ function setFlashMessage($message, $type = 'success')
     return $_SESSION['flash_message'][$type] = $message;
 }
 
-//Получаем флеш сообщение тип оп умолчанию success для удобства вывода
+//Получаем флеш сообщение елси тип такой есть то возврашем , по умолчанию success для удобства вывода
 function getFlashMessage($type = 'success'){
     if(isset($_SESSION['flash_message'][$type])){
         $message = $_SESSION['flash_message'][$type];
@@ -60,4 +60,13 @@ function redirect($url){
     exit();
 }
 
+// Функции логина которая проверяет есть ли такой пользыватель в бд и сравниваеть пороли
+function login($email, $password){
+    $user = getUserByEmail($email);
+    if($user && password_verify($password, $user['password'])){
+        $_SESSION['email'] = $user['email'];
+        return true;
+    }
+    return false;
+}
 

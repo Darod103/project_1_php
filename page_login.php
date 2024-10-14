@@ -1,6 +1,7 @@
 <?php
 require ('functions.php');
 $success = getFlashMessage('success');
+$error = getFlashMessage('danger');
 ?>
 
 <!DOCTYPE html>
@@ -43,14 +44,19 @@ $success = getFlashMessage('success');
                 <?php echo $success; ?>
             </div>
             <?php endif;?>
-            <form action="">
+            <?php if(isset($error)) :?>
+            <div class="alert alert-danger">
+                <?php echo $error; ?>
+            </div>
+            <?php endif;?>
+            <form action="login.php" method="post">
                 <div class="form-group">
                     <label class="form-label" for="username">Email</label>
-                    <input type="email" id="username" class="form-control" placeholder="Эл. адрес" value="">
+                    <input  name="email" type="email" id="username" class="form-control" placeholder="Эл. адрес" value="">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="password">Пароль</label>
-                    <input type="password" id="password" class="form-control" placeholder="" >
+                    <input name="password" type="password" id="password" class="form-control" placeholder="" >
                 </div>
                 <button type="submit" class="btn btn-default float-right">Войти</button>
             </form>
