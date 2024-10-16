@@ -2,6 +2,8 @@
 require ('functions.php');
 $success = getFlashMessage('success');
 $error = getFlashMessage('danger');
+session_unset();
+
 ?>
 
 <!DOCTYPE html>
