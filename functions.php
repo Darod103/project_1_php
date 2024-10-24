@@ -24,10 +24,10 @@ function getUserByEmail($email) {
         $stmt->execute(['email' => $email]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-    return null;
+    return false;
 }
 
-//Добовляем пользывателя
+//Добовляем пользывателя и возврощает userId
 function addUser($email, $password)
 {
   $pdo = db('127.0.0.1','test','root','');
@@ -35,8 +35,45 @@ function addUser($email, $password)
   $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
   $stmt = $pdo->prepare("INSERT INTO users (email, password) VALUES (:email, :password)");
   $stmt->execute(['email' => $email, 'password' => $hashedPassword]);
+  return (int)$pdo->lastInsertId();
+
 
 }
+// Проверка статуса пользывателя
+function checkStatus($status)
+{
+    $result ='';
+    switch ($status) {
+        case 'online':
+            $result = 'success';
+            break;
+        case 'away':
+            $result = 'md';
+            break;
+        case 'do_not_disturb':
+            $result = 'warning';
+            break;
+    }
+    return $result;
+
+}
+
+function addUserDetails($userId, $name, $workplace,$phone,$address,$status,$vk_link,$telegram_link ,$instagram_link){
+    $pdo = db('127.0.0.1','test','root','');
+    $stmt = $pdo->prepare('insert into users_details (user_id,name,workplace,phone,address,online_status,vk_link,telegram_link,instagram_link) value (:user_id,:name,:workplace,:phone,:address,:online_status,:vk_link,:telegram_link,:instagram_link) ');
+    $stmt->execute([
+        'user_id' => $userId,
+        'name' => $name,
+        'workplace' => $workplace,
+        'phone' => $phone,
+        'address' => $address,
+        'online_status' => $status,
+        'vk_link' => $vk_link,
+        'telegram_link' => $telegram_link,
+        'instagram_link' => $instagram_link
+    ]);
+}
+
 
 //Создаем флеш сообщение по умолчанию стоит success
 function setFlashMessage($message, $type = 'success')
@@ -82,7 +119,8 @@ function isAdmin($email)
 }
 
 // Функции логина которая проверяет есть ли такой пользыватель в бд и сравниваеть пороли
-function login($email, $password){
+function login($email, $password): bool
+{
     $user = getUserByEmail($email);
     if($user && password_verify($password, $user['password'])){
         $_SESSION['email'] = $user['email'];
@@ -101,4 +139,33 @@ function getAllUsers()
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function uploadAvatar($userId,$uploadDir,$file): bool
+{
+    // Проверяем есть ли такая папка , если нет то создаем ее !
+    if(!is_dir($uploadDir)){
+        mkdir($uploadDir, 0777, true);
+    }
+
+    $newFileName = uniqid().'.'.pathinfo($file["file"]['name'], PATHINFO_EXTENSION);
+    $uploadPath = rtrim($uploadDir, '/') . '/' . $newFileName;
+
+    //Проверяем  формат передоваемых файлов если формата нет в массиве возвращем false
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!in_array($file['file']['type'], $allowedTypes)) {
+        return false;
+    }
+
+    if(move_uploaded_file($file['file']['tmp_name'], $uploadPath)){
+        $pdo = db('127.0.0.1','test','root','');
+        $stmt = $pdo->prepare("UPDATE users_details SET avatar = :avatar WHERE user_id = :id");
+        $stmt->execute(['avatar' =>$uploadPath, 'id' => $userId]);
+        return true;
+    }else{
+        return false;
+    }
+};
+
+
+//addUser('213@ew,eu',123);
+//var_dump(addUser('213@dasd', '21345'));
 //var_dump(getAllUsers());

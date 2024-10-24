@@ -61,7 +61,7 @@ $users = getAllUsers();
     <div class="row">
         <div class="col-xl-12">
             <?php if ($_SESSION['is_admin']) : ?>
-                <a class="btn btn-success" href="create_user.html">Добавить</a>
+                <a class="btn btn-success" href="create_user.php">Добавить</a>
             <?php endif; ?>
             <div class="border-faded bg-faded p-3 mb-g d-flex mt-3">
                 <input type="text" id="js-filter-contacts" name="filter-contacts"
@@ -87,7 +87,7 @@ $users = getAllUsers();
                         <div class="d-flex flex-row align-items-center">
                                 <span class="status status-<?php echo $user['online_status'] ?> mr-3">
                                     <span class="rounded-circle profile-image d-block "
-                                          style="background-image:url('<?php echo $user['avatar'] ?>'); background-size: cover;"></span>
+                                          style="background-image:url('<?php echo !empty($user['avatar'])? $user['avatar'] : 'img/demo/avatars/avatar-m.png'  ?>'); background-size: cover;"></span>
                                 </span>
                             <div class="info-card-text flex-1">
                                 <a href="javascript:void(0);" class="fs-xl text-truncate text-truncate-lg text-info"
