@@ -26,7 +26,15 @@ function getUserByEmail($email) {
     }
     return false;
 }
-
+function getUserDetails($userId)
+{   $pdo = db('127.0.0.1','test','root','');
+    if($pdo) {
+        $stmt = $pdo->prepare("SELECT * FROM users_details WHERE user_id = :id");
+        $stmt->execute(['id' => $userId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    return false;
+};
 //Добовляем пользывателя и возврощает userId
 function addUser($email, $password)
 {
@@ -58,7 +66,8 @@ function checkStatus($status)
 
 }
 
-function addUserDetails($userId, $name, $workplace,$phone,$address,$status,$vk_link,$telegram_link ,$instagram_link){
+//Добовляеми детали юзеру по айди
+function addUserDetails($userId, $name, $workplace,$phone,$address,$status = 'md',$vk_link = null,$telegram_link = null ,$instagram_link= null){
     $pdo = db('127.0.0.1','test','root','');
     $stmt = $pdo->prepare('insert into users_details (user_id,name,workplace,phone,address,online_status,vk_link,telegram_link,instagram_link) value (:user_id,:name,:workplace,:phone,:address,:online_status,:vk_link,:telegram_link,:instagram_link) ');
     $stmt->execute([
@@ -74,6 +83,19 @@ function addUserDetails($userId, $name, $workplace,$phone,$address,$status,$vk_l
     ]);
 }
 
+// Передаем массив и изменяем у юзера имя,место работы, телефон и адреес
+function editUserDetails($user)
+{
+    $pdo = db('127.0.0.1','test','root','');
+    $stmt = $pdo->prepare('update users_details set name=:name, workplace=:workplace,phone=:phone,address=:address where user_id=:user_id');
+    $stmt->execute(['name'=>$user['name'],
+        'workplace'=>$user['workplace'],
+        'phone'=>$user['phone'],
+        'address'=>$user['address'],
+        'user_id'=>$user['user_id']]);
+
+
+}
 
 //Создаем флеш сообщение по умолчанию стоит success
 function setFlashMessage($message, $type = 'success')
@@ -164,8 +186,3 @@ function uploadAvatar($userId,$uploadDir,$file): bool
         return false;
     }
 };
-
-
-//addUser('213@ew,eu',123);
-//var_dump(addUser('213@dasd', '21345'));
-//var_dump(getAllUsers());

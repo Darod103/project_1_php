@@ -41,7 +41,7 @@ $users = getAllUsers();
                 <a class="nav-link" href="page_login.php">Войти</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Выйти</a>
+                <a class="nav-link" href="exit.php">Выйти</a>
             </li>
         </ul>
     </div>
@@ -100,7 +100,7 @@ $users = getAllUsers();
                                 </a>
                                 <?php if ($user['id'] === $_SESSION['id'] || $_SESSION['is_admin']) : ?>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="edit.html">
+                                        <a class="dropdown-item" href="edit.php?id=<?php echo $user['id']?>">
                                             <i class="fa fa-edit"></i>
                                             Редактировать</a>
                                         <a class="dropdown-item" href="security.html">
