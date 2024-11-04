@@ -1,27 +1,14 @@
-<?php
-require 'functions.php';
-if (!isset($_SESSION['email']) || !isset($_GET['id'])) {
-    redirect('page_login.php');
+<?php require 'functions.php';
+
+if (!isset($_GET['id'])) {
+    redirect('index.php');
 }
-$user = getUserDetails($_GET['id']);
 
+$error = getFlashMessage('error');
+$user = getUserById($_GET['id']);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Document</title>
-    <meta name="description" content="Chartist.html">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, minimal-ui">
-    <link id="vendorsbundle" rel="stylesheet" media="screen, print" href="css/vendors.bundle.css">
-    <link id="appbundle" rel="stylesheet" media="screen, print" href="css/app.bundle.css">
-    <link id="myskin" rel="stylesheet" media="screen, print" href="css/skins/skin-master.css">
-    <link rel="stylesheet" media="screen, print" href="css/fa-solid.css">
-    <link rel="stylesheet" media="screen, print" href="css/fa-brands.css">
-</head>
+<?php require 'header.php'; ?>
 <body>
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary bg-primary-gradient">
     <a class="navbar-brand d-flex align-items-center fw-500" href="index.php"><img alt="logo"
                                                                                    class="d-inline-block align-top mr-2"
@@ -35,7 +22,7 @@ $user = getUserDetails($_GET['id']);
             <li class="nav-item">
                 <a class="nav-link" href="index.php">Главная <span class="sr-only">(current)</span></a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item active">
                 <a class="nav-link" href="page_profile.php">Профиль <span class="sr-only">(current)</span></a>
             </li>
         </ul>
@@ -49,53 +36,51 @@ $user = getUserDetails($_GET['id']);
 <main id="js-page-content" role="main" class="page-content mt-3">
     <div class="subheader">
         <h1 class="subheader-title">
-            <i class='subheader-icon fal fa-plus-circle'></i> Редактировать
+            <i class='subheader-icon fal fa-lock'></i> Безопасность
         </h1>
 
     </div>
-    <form action="editUser.php" method="post">
+    <form action="editCredentials.php" method="post">
         <div class="row">
             <div class="col-xl-6">
                 <div id="panel-1" class="panel">
                     <div class="panel-container">
                         <div class="panel-hdr">
-                            <h2>Общая информация</h2>
+                            <h2>Обновление эл. адреса и пароля</h2>
                         </div>
+                        <?php if (isset($error)) : ?>
+                            <div class="alert alert-danger">
+                                <?php echo $error; ?>
+                            </div>
+                        <?php endif; ?>
                         <div class="panel-content">
-                            <!-- username -->
-                            <!--сделал скрытый инпут для id-->
-                            <input hidden="hidden" value="<?php echo $_GET['id'] ?>" name="id">
+                            <!-- email -->
                             <div class="form-group">
-                                <label class="form-label" for="simpleinput">Имя</label>
-                                <input name="name" type="text" id="simpleinput" class="form-control"
-                                       value="<?php echo isset($user['name']) ? $user['name'] : '' ?>">
+                                <label class="form-label" for="simpleinput">Email</label>
+                                <input hidden="hidden" name="id" value="<?php echo $user['id']; ?>">
+                                <input name="email" type="text" id="simpleinput" class="form-control"
+                                       value="<?php echo $user['email']; ?>">
                             </div>
 
-                            <!-- title -->
+                            <!-- password -->
                             <div class="form-group">
-                                <label class="form-label" for="simpleinput">Место работы</label>
-                                <input name="workplace" type="text" id="simpleinput" class="form-control"
-                                       value="<?php echo isset($user['workplace']) ? $user['workplace'] : '' ?>">
+                                <label class="form-label" for="simpleinput">Пароль</label>
+                                <input name="password" type="password" id="simpleinput" class="form-control">
                             </div>
 
-                            <!-- tel -->
+                            <!-- password confirmation-->
                             <div class="form-group">
-                                <label class="form-label" for="simpleinput">Номер телефона</label>
-                                <input name="phone" type="text" id="simpleinput" class="form-control"
-                                       value="<?php echo isset($user['phone']) ? $user['phone'] : '' ?>">
+                                <label class="form-label" for="simpleinput">Подтверждение пароля</label>
+                                <input name="confirm_password" type="password" id="simpleinput" class="form-control">
                             </div>
 
-                            <!-- address -->
-                            <div class="form-group">
-                                <label class="form-label" for="simpleinput">Адрес</label>
-                                <input name="address" type="text" id="simpleinput" class="form-control"
-                                       value="<?php echo isset($user['address']) ? $user['address'] : '' ?>">
-                            </div>
+
                             <div class="col-md-12 mt-3 d-flex flex-row-reverse">
-                                <button class="btn btn-warning" type="submit">Редактировать</button>
+                                <button class="btn btn-warning" type="submit">Изменить</button>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

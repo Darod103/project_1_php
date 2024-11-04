@@ -4,26 +4,14 @@ require 'functions.php';
 if (!isset($_SESSION['email'])) {
     redirect('page_login.php');
 }
+$error = getFlashMessage('error');
 $success = getFlashMessage();
 $users = getAllUsers();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Document</title>
-    <meta name="description" content="Chartist.html">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no, minimal-ui">
-    <link id="vendorsbundle" rel="stylesheet" media="screen, print" href="css/vendors.bundle.css">
-    <link id="appbundle" rel="stylesheet" media="screen, print" href="css/app.bundle.css">
-    <link id="myskin" rel="stylesheet" media="screen, print" href="css/skins/skin-master.css">
-    <link rel="stylesheet" media="screen, print" href="css/fa-solid.css">
-    <link rel="stylesheet" media="screen, print" href="css/fa-brands.css">
-</head>
+<?php require 'header.php'; ?>
 <body class="mod-bg-1 mod-nav-link">
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary bg-primary-gradient">
-    <a class="navbar-brand d-flex align-items-center fw-500" href="users.html"><img alt="logo"
+    <a class="navbar-brand d-flex align-items-center fw-500" href="index.php"><img alt="logo"
                                                                                     class="d-inline-block align-top mr-2"
                                                                                     src="img/logo.png"> Учебный
         проект</a>
@@ -33,13 +21,10 @@ $users = getAllUsers();
     <div class="collapse navbar-collapse" id="navbarColor02">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-                <a class="nav-link" href="#">Главная <span class="sr-only">(current)</span></a>
+                <a class="nav-link" href="page_profile.php">Профиль <span class="sr-only">(current)</span></a>
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link" href="page_login.php">Войти</a>
-            </li>
             <li class="nav-item">
                 <a class="nav-link" href="exit.php">Выйти</a>
             </li>
@@ -48,6 +33,11 @@ $users = getAllUsers();
 </nav>
 
 <main id="js-page-content" role="main" class="page-content mt-3">
+    <?php if(isset($error)) :?>
+        <div class="alert alert-danger">
+            <?php echo $error; ?>
+        </div>
+    <?php endif;?>
     <?php if ($success): ?>
         <div class="alert alert-success">
             <?php echo $success ?>
@@ -103,17 +93,17 @@ $users = getAllUsers();
                                         <a class="dropdown-item" href="edit.php?id=<?php echo $user['id']?>">
                                             <i class="fa fa-edit"></i>
                                             Редактировать</a>
-                                        <a class="dropdown-item" href="security.html">
+                                        <a class="dropdown-item" href="security.php?id=<?php echo $user['id']?>">
                                             <i class="fa fa-lock"></i>
                                             Безопасность</a>
-                                        <a class="dropdown-item" href="status.html">
+                                        <a class="dropdown-item" href="status.php?id=<?php echo $user['id']?>">
                                             <i class="fa fa-sun"></i>
                                             Установить статус</a>
-                                        <a class="dropdown-item" href="media.html">
+                                        <a class="dropdown-item" href="media.php?id=<?php echo $user['id']?>">
                                             <i class="fa fa-camera"></i>
                                             Загрузить аватар
                                         </a>
-                                        <a href="#" class="dropdown-item" onclick="return confirm('are you sure?');">
+                                        <a href="deleteUser.php?id=<?php echo $user['id']?>" class="dropdown-item" onclick="return confirm('are you sure?');">
                                             <i class="fa fa-window-close"></i>
                                             Удалить
                                         </a>
@@ -160,20 +150,7 @@ $users = getAllUsers();
         <?php endforeach; ?>
     </div>
 </main>
-
-<!-- BEGIN Page Footer -->
-<footer class="page-footer" role="contentinfo">
-    <div class="d-flex align-items-center flex-1 text-muted">
-        <span class="hidden-md-down fw-700">2020 © Учебный проект</span>
-    </div>
-    <div>
-        <ul class="list-table m-0">
-            <li><a href="intel_introduction.html" class="text-secondary fw-700">Home</a></li>
-            <li class="pl-3"><a href="info_app_licensing.html" class="text-secondary fw-700">About</a></li>
-        </ul>
-    </div>
-</footer>
-
+<?php require 'footer.php'; ?>
 </body>
 
 <script src="js/vendors.bundle.js"></script>

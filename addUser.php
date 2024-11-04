@@ -36,6 +36,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         }
     }
     setFlashMessage('Пользыватель успешно добавлен !');
-    redirect('users.php');
+    redirect('index.php');
 
 }

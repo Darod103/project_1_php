@@ -12,11 +12,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if(!getUserDetails($user['user_id'])){
         addUserDetails($user['user_id'],$user['name'],$user['workplace'],$user['phone'],$user['address']);
         setFlashMessage("Данные {$user['name']} успешно изменены");
-        redirect("users.php");
+        redirect("index.php");
     }
 
 
     editUserDetails($user);
     setFlashMessage("Данные {$user['name']} успешно изменены");
-    redirect("users.php");
+    redirect("index.php");
 }

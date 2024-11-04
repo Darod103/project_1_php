@@ -1,24 +1,12 @@
 <?php
+require_once 'db.php';
 session_start();
 
-// Подключаемся к бд если есть ошибка то записывам ее в лог
-function db($host, $db, $user, $pass)
-{
-    $dsn = "mysql:host=$host;dbname=$db;charset=utf8";
-    try {
-        $pdo = new PDO($dsn, $user, $pass);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        return $pdo;
-    }catch (PDOException $e){
-        error_log('Connection failed: ' . $e->getMessage());
-        return null;
-    }
 
-}
 
-//Получаем пользывателя по емейлу добавлина проверка на подключение к базе
+//Получаем пользователь по email добавлена проверка на подключение к базе
 function getUserByEmail($email) {
-    $pdo = db('127.0.0.1','test','root','');
+    $pdo = db();
     if($pdo) {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = :email");
         $stmt->execute(['email' => $email]);
@@ -26,8 +14,9 @@ function getUserByEmail($email) {
     }
     return false;
 }
+//Выводим детали пользователя по id
 function getUserDetails($userId)
-{   $pdo = db('127.0.0.1','test','root','');
+{   $pdo = db();
     if($pdo) {
         $stmt = $pdo->prepare("SELECT * FROM users_details WHERE user_id = :id");
         $stmt->execute(['id' => $userId]);
@@ -35,10 +24,24 @@ function getUserDetails($userId)
     }
     return false;
 };
-//Добовляем пользывателя и возврощает userId
+// Вывод с 2 бд данных  пользователя по id
+function getUserById($userId){
+    $pdo = db();
+    if($pdo) {
+        $stmt = $pdo->prepare("SELECT * FROM users 
+                                     left join users_details  
+                                    on users.id = users_details.user_id
+                                    where id = :userId");
+        $stmt->execute(['userId' => $userId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    return false;
+}
+
+//Добавляем пользователя и возвращаем userId
 function addUser($email, $password)
 {
-  $pdo = db('127.0.0.1','test','root','');
+  $pdo = db();
 
   $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
   $stmt = $pdo->prepare("INSERT INTO users (email, password) VALUES (:email, :password)");
@@ -47,8 +50,8 @@ function addUser($email, $password)
 
 
 }
-// Проверка статуса пользывателя
-function checkStatus($status)
+// Проверка статуса пользователя
+function checkStatus($status): string
 {
     $result ='';
     switch ($status) {
@@ -56,19 +59,29 @@ function checkStatus($status)
             $result = 'success';
             break;
         case 'away':
-            $result = 'md';
+            $result = 'warning';
             break;
         case 'do_not_disturb':
-            $result = 'warning';
+            $result = 'md';
             break;
     }
     return $result;
 
 }
-
-//Добовляеми детали юзеру по айди
+//Функция меняет статус пользователя.
+function changeStatus($userId, $online_status) : bool
+{
+    $pdo = db();
+    $stmt = $pdo->prepare("UPDATE users_details SET online_status = :online_status WHERE user_id = :userId");
+    $stmt->execute(['online_status' => checkStatus($online_status), 'userId' => $userId]);
+    if($stmt->rowCount() > 0) {
+        return true;
+    }
+    return false;
+}
+//Добавляем детали юзеру по id
 function addUserDetails($userId, $name, $workplace,$phone,$address,$status = 'md',$vk_link = null,$telegram_link = null ,$instagram_link= null){
-    $pdo = db('127.0.0.1','test','root','');
+    $pdo = db();
     $stmt = $pdo->prepare('insert into users_details (user_id,name,workplace,phone,address,online_status,vk_link,telegram_link,instagram_link) value (:user_id,:name,:workplace,:phone,:address,:online_status,:vk_link,:telegram_link,:instagram_link) ');
     $stmt->execute([
         'user_id' => $userId,
@@ -83,10 +96,10 @@ function addUserDetails($userId, $name, $workplace,$phone,$address,$status = 'md
     ]);
 }
 
-// Передаем массив и изменяем у юзера имя,место работы, телефон и адреес
+// Передаем массив и изменяем у юзера имя,место работы, телефон и адрес
 function editUserDetails($user)
 {
-    $pdo = db('127.0.0.1','test','root','');
+    $pdo = db();
     $stmt = $pdo->prepare('update users_details set name=:name, workplace=:workplace,phone=:phone,address=:address where user_id=:user_id');
     $stmt->execute(['name'=>$user['name'],
         'workplace'=>$user['workplace'],
@@ -97,13 +110,13 @@ function editUserDetails($user)
 
 }
 
-//Создаем флеш сообщение по умолчанию стоит success
+//Создаем флеш-сообщение, по умолчанию стоит success
 function setFlashMessage($message, $type = 'success')
 {
     return $_SESSION['flash_message'][$type] = $message;
 }
 
-//Получаем флеш сообщение елси тип такой есть то возврашем , по умолчанию success для удобства вывода
+//Получаем флеш-сообщение, если тип такой есть то возвращаем . По умолчанию success для удобства вывода.
 function getFlashMessage($type = 'success'){
     if(isset($_SESSION['flash_message'][$type])){
         $message = $_SESSION['flash_message'][$type];
@@ -114,14 +127,15 @@ function getFlashMessage($type = 'success'){
 }
 
 // Редирект на определенную страницу
-function redirect($url){
+function redirect($url) : void {
     header('Location: '.$url);
     exit();
 }
 
-// Функция добовляет прова админа пользывателю по email
-function addAdminRole ($email){
-    $pdo = db('127.0.0.1','test','root','');
+// Функция добавляет права админа пользователю по email
+function addAdminRole ($email): bool
+{
+    $pdo = db();
     $stmt = $pdo->prepare("update users set is_admin = 1 where email = :email");
     $stmt->execute(['email' => $email]);
     if($stmt->rowCount() > 0){
@@ -130,18 +144,19 @@ function addAdminRole ($email){
     else return false;
 }
 
-// Проверка ялвяеться ли пользыватель админом
-function isAdmin($email)
+// Проверка являеться ли пользователь админом
+function isAdmin($email): bool
 {
-    $pdo = db('127.0.0.1','test','root','');
+    $pdo = db();
     $stmt = $pdo->prepare("SELECT is_admin FROM users WHERE email = :email");
     $stmt->execute(['email' => $email]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     return !($result['is_admin'] === 0);
 }
 
-// Функции логина которая проверяет есть ли такой пользыватель в бд и сравниваеть пороли
-function login($email, $password): bool
+// Функция логина, которая проверяет, есть ли такой пользователь в БД и сравнивает пароли.
+// При успешной проверке передает в сессию email, id и информацию о том, является ли пользователь администратором.
+function checkUser($email, $password): bool
 {
     $user = getUserByEmail($email);
     if($user && password_verify($password, $user['password'])){
@@ -152,15 +167,27 @@ function login($email, $password): bool
     }
     return false;
 }
+//Функция меняет пароль и email пользователя
+function editCredentials($userId, $email, $password) : bool{
+    $user = getUserByEmail(strtolower(strtolower($email)));
+    if ($user && $user['id'] != $userId){
+        return false;
+    }
+        $pdo =db();
+        $stmt = $pdo->prepare('update users set email=:email, password=:password where id = :userId');
+        $stmt->execute(['email' => strtolower($email), 'password' => password_hash($password,PASSWORD_DEFAULT), 'userId' => $userId]);
+        return true;
 
-// Выводи всех пользывателей из 2 таблиц
+
+}
+// Вывод всех пользывателей из двух таблиц
 function getAllUsers()
-{   $pdo = db('127.0.0.1','test','root','');
+{   $pdo = db();
     $stmt = $pdo->prepare("SELECT u.email, u.id,d.* FROM users u left join users_details d on u.id = d.user_id ");
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
+//Загрузка аватарки в бд и в указанную дерикторию
 function uploadAvatar($userId,$uploadDir,$file): bool
 {
     // Проверяем есть ли такая папка , если нет то создаем ее !
@@ -171,14 +198,14 @@ function uploadAvatar($userId,$uploadDir,$file): bool
     $newFileName = uniqid().'.'.pathinfo($file["file"]['name'], PATHINFO_EXTENSION);
     $uploadPath = rtrim($uploadDir, '/') . '/' . $newFileName;
 
-    //Проверяем  формат передоваемых файлов если формата нет в массиве возвращем false
+    //Проверяем  формат передаваемых файлов если формата нет в массиве возвращаем false
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     if (!in_array($file['file']['type'], $allowedTypes)) {
         return false;
     }
 
     if(move_uploaded_file($file['file']['tmp_name'], $uploadPath)){
-        $pdo = db('127.0.0.1','test','root','');
+        $pdo = db();
         $stmt = $pdo->prepare("UPDATE users_details SET avatar = :avatar WHERE user_id = :id");
         $stmt->execute(['avatar' =>$uploadPath, 'id' => $userId]);
         return true;
@@ -186,3 +213,15 @@ function uploadAvatar($userId,$uploadDir,$file): bool
         return false;
     }
 };
+
+//Функция удаления пользователя из бд по id
+function deleteUser($userId) :bool
+{
+    $pdo = db();
+    $stmt = $pdo->prepare("DELETE FROM users WHERE id = :userId");
+    $stmt->execute(['userId' => $userId]);
+    if($stmt->rowCount() > 0){
+        return true;
+    }
+    return false;
+}
